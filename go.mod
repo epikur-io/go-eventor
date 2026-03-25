@@ -1,6 +1,6 @@
 module github.com/epikur-io/go-eventor
 
-go 1.18
+go 1.22.3
 
 require (
 	github.com/rs/zerolog v1.33.0
