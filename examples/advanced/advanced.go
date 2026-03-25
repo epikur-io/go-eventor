@@ -88,6 +88,9 @@ func main() {
 	defer cancel()
 	ectx := eventor.NewEventContext(expiry)
 
+	// Add some data to the event context
+	ectx.Data.Set("foo", "bar")
+
 	// Trigger an event
 	cnt, err := observer.Dispatch("event_a", ectx) // calling `Dispatch(...)` sequentially executes all event handlers for `event_a` ordered descending by the event handlers' priority.
 	if err != nil {
