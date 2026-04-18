@@ -215,34 +215,34 @@ func (o *Observer) init() {
 // Allows recursive executuion of event handlers debending on the setting
 func (o *Observer) AllowRecursion(allow bool) {
 	o.mux.Lock()
+	defer o.mux.Unlock()
 	o.config.allowRecursion = allow
-	o.mux.Unlock()
 }
 
 // Allows recursive executuion of event handlers debending on the setting
 func (o *Observer) SetCallstackLimit(size int) {
 	o.mux.Lock()
+	defer o.mux.Unlock()
 	o.config.callstackLimit = size
-	o.mux.Unlock()
 }
 
 // Returns all registered event handlers mapped by eventName->Handler
 func (o *Observer) Handlers() map[string]HandlerList {
 	o.mux.RLock()
+	defer o.mux.RUnlock()
 	var meta map[string]HandlerList = make(map[string]HandlerList)
 	for e, ec := range o.eventHandlers {
 		meta[e] = HandlerList{}
 		copy(meta[e], ec[:])
 	}
-	o.mux.RUnlock()
 	return meta
 }
 
 // Deletes all registered event handlers
 func (o *Observer) Clear() {
 	o.mux.Lock()
+	defer o.mux.Unlock()
 	o.deleteAll()
-	o.mux.Unlock()
 }
 
 func (m *Observer) deleteAll() {
@@ -252,8 +252,8 @@ func (m *Observer) deleteAll() {
 // DeleteByEvent deletes event handler by its event name their listening on
 func (o *Observer) ClearEvent(ei string) {
 	o.mux.Lock()
+	defer o.mux.Unlock()
 	o.clearEvent(ei)
-	o.mux.Unlock()
 }
 
 func (o *Observer) clearEvent(ei string) {
@@ -263,8 +263,8 @@ func (o *Observer) clearEvent(ei string) {
 // Deletes the registered event handlers filtered by event name and ID
 func (o *Observer) Remove(ei string, id string) {
 	o.mux.Lock()
+	defer o.mux.Unlock()
 	o.remove(ei, id)
-	o.mux.Unlock()
 }
 
 func (o *Observer) remove(ei string, id string) {
@@ -293,8 +293,8 @@ func (o *Observer) remove(ei string, id string) {
 // Deletes all event handlers with the given ID ignoring the event name
 func (o *Observer) RemoveID(id string) uint64 {
 	o.mux.Lock()
+	defer o.mux.Unlock()
 	deleted := o.removeID(id)
-	o.mux.Unlock()
 	return deleted
 }
 func (o *Observer) removeID(id string) uint64 {
@@ -324,6 +324,7 @@ func (o *Observer) removeID(id string) uint64 {
 // Deletes all event handlers that where the ID starts with the given prefix
 func (o *Observer) RemoveIDPrefix(prefix string) uint64 {
 	o.mux.Lock()
+	defer o.mux.Unlock()
 	total := 0
 	for ei, ev := range o.eventHandlers {
 		deleted := 0
@@ -344,13 +345,13 @@ func (o *Observer) RemoveIDPrefix(prefix string) uint64 {
 		total += deleted
 		o.eventHandlers[ei].Sort(o.config.executionOrder)
 	}
-	o.mux.Unlock()
 	return uint64(total)
 }
 
 // Returns the number of event handlers registers with the given ID ignoring the event name
 func (o *Observer) CountID(id string) uint64 {
 	o.mux.RLock()
+	defer o.mux.RUnlock()
 	found := uint64(0)
 	for _, ev := range o.eventHandlers {
 		for _, e := range ev {
@@ -359,13 +360,13 @@ func (o *Observer) CountID(id string) uint64 {
 			}
 		}
 	}
-	o.mux.RUnlock()
 	return found
 }
 
 // Returns the number of registered event handlers filterd by ID ignoring the name
 func (o *Observer) CountIDPrefix(prefix string) uint64 {
 	o.mux.RLock()
+	defer o.mux.RUnlock()
 	found := uint64(0)
 	for _, ev := range o.eventHandlers {
 		for _, e := range ev {
@@ -374,7 +375,6 @@ func (o *Observer) CountIDPrefix(prefix string) uint64 {
 			}
 		}
 	}
-	o.mux.RUnlock()
 	return found
 }
 
