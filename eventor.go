@@ -186,6 +186,7 @@ func NewObserver(opts ...option) *Observer {
 	o := &Observer{
 		config: config{
 			executionOrder: ExecDescending,
+			logger:         zerolog.Nop().With().Logger(),
 		},
 	}
 
